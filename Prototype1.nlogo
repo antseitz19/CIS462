@@ -84,15 +84,14 @@ to move
   ]
   ask players[
       let gather gatherRate
+      let use one-of waters-here
       ask waters[
-        if any? other players-here[
-          if gather = 0[
-            die
-            set gather gather + 100
-            stop
+          if gather = 0 and use != nobody[
+             ask use [die]
+             set gather 500
+
           ]
         ]
-      ]
     set gatherRate gather
     if gatherRate != 0[
       set gatherRate gatherRate - 1
