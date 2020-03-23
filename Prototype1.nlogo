@@ -1,44 +1,53 @@
 turtles-own[]
 
 globals[
-  numberOfResources
-  growth
-  parentX
-  parentY
 ]
 
 waters-own[
-  waterGrowth
+  waterGrowth ; how fast water spreads
+  parentX ; parent xcor
+  parentY ; parent ycor
 ]
 
 players-own[
   destX
   desty
-  gatherRate
+  gatherRate; how fast player can collect resource again
+  numWater ; how much water player has
 ]
 
 breed [waters water]
 breed[players player]
 
 
-to background
-    ask patch (min-pxcor / 2) (0)[ sprout-waters 1 [
+to background ; create player and all other initial entities
+    ask patch (min-pxcor / 2) (0)[ sprout-waters 1 [  ;make water cell at given cords
       set waterGrowth 50
       set size .5   ; easier to see
-      set color blue
+      set color blue ; color of water is blue
     ]
   ]
-    ask patch round (min-pxcor / 2) round (min-pycor / 2)[ sprout-players 1 [
+    ask patch round (min-pxcor / 2) round (min-pycor / 2)[ sprout-players 1 [ ; make player at given cords
       set size .5
       set color red
-      set destx round (min-pxcor / 2)
+      set destx round (min-pxcor / 2) ; initial destination is spawn point
       set desty round (min-pycor / 2)
-      set gatherRate 30
+      set gatherRate 30 ; how many ticks till player can pick up resource
+      set numWater 0 ; inital water resource
     ]
   ]
 end
 
-to setup
+to-report PlayerWater ; reports amount of water player has
+  let wat 0
+  ask players[
+    set wat numWater
+  ]
+  report wat
+end
+
+
+to setup ; sets all starting conditions
   clear-all
   set-default-shape players "circle"
   set-default-shape waters "circle"
@@ -48,31 +57,33 @@ to setup
   reset-ticks
 end
 
-to resources
+to resources ; controls resources in general
 
 
   ask waters [
     set waterGrowth waterGrowth + 1
-    let surrounding 0
     set parentX xcor
     set parentY ycor
-    set surrounding count waters in-cone 10 360
-    if waterGrowth = 100 and surrounding < 20[
-      let randomy -1 + random-float 2
-      let randomx -1 + random-float 2
+    let surrounding count waters in-cone 10 360
+    if waterGrowth = 100 and surrounding < 20[ ; limits growth rate and amount
+      let randomy -1 + random-float 2 ; make random spawn distance y
+      let randomx -1 + random-float 2; make random spawn distance y
       set waterGrowth 0
-      hatch-waters 1[
+      hatch-waters 1[ ; spawn new water
         set color blue
         set size .5
-        setxy(parentX + randomx) (parentY + randomy)
+        setxy(parentX + randomx) (parentY + randomy) ; random spawn point but close to parent
       ]
     ]
-  ]
+    if waterGrowth > 100 [ ; water always takes 100 ticks to respawn even if one was just taken
+      set waterGrowth 0
+    ]
+ ]
 
 end
 
-to move
-  if mouse-down?
+to move ; controls player
+  if mouse-down? ; click to tell player where to go
   [
     if not mouse-inside?[stop]
     ask players
@@ -82,48 +93,42 @@ to move
       facexy (destx)(desty)
     ]
   ]
-  ask players[
+  ask players[ ; collecting resources
       let gather gatherRate
+      let wat numWater ; avoid asking waters for variables it doesnt have (temp vars)
       let use one-of waters-here
       ask waters[
-          if gather = 0 and use != nobody[
+          if gather = 0 and use != nobody[ ; use only one and only if a number of ticks went by
              ask use [die]
-             set gather 500
-
+             set gather 150 ; how long until another resource can be used
+             set wat wat + 1 ; increment wat
           ]
         ]
-    set gatherRate gather
+    set numWater wat
+    set gatherRate gather; get info from temo variables
     if gatherRate != 0[
-      set gatherRate gatherRate - 1
+      set gatherRate gatherRate - 1 ; decerement time till next gather by 1 every tick
     ]
-    if destx - xcor > .5 or desty - ycor > .5 or destx - xcor < -.5 or desty - ycor < -.5[
+    if destx - xcor > .5 or desty - ycor > .5 or destx - xcor < -.5 or desty - ycor < -.5[ ; player stops within .5 units of click point
       fd .1
     ]
   ]
 end
 
-to go
-
+to go; calls other procedures to segment code (other wise to go would be huge and hard to manage
   resources
   move
   tick
 end
-
-
-to set-player
-  if not mouse-inside? [stop]
-  ask players [die]
-  sprout-players 1
-end
 @#$#@#$#@
 GRAPHICS-WINDOW
-209
+205
 10
-646
-448
+696
+502
 -1
 -1
-13.0
+14.64
 1
 10
 1
@@ -184,6 +189,17 @@ MONITOR
 233
 count turtles
 count turtles
+17
+1
+11
+
+MONITOR
+28
+256
+85
+301
+Water
+playerwater
 17
 1
 11
