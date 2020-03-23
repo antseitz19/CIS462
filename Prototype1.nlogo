@@ -32,10 +32,16 @@ to background ; create player and all other initial entities
       set color red
       set destx round (min-pxcor / 2) ; initial destination is spawn point
       set desty round (min-pycor / 2)
-      set gatherRate 30 ; how many ticks till player can pick up resource
+      set gatherRate 200 ; how many ticks till player can pick up resource
       set numWater 0 ; inital water resource
     ]
   ]
+end
+
+to instructions
+  print "Click to move player to gather resources."
+  print "Player:RED|Water:BLUE"
+  print "Gathering: 1 resource per 200 ticks"
 end
 
 to-report PlayerWater ; reports amount of water player has
@@ -53,6 +59,7 @@ to setup ; sets all starting conditions
   set-default-shape waters "circle"
   ask patches [set pcolor green]
   background
+  instructions
 
   reset-ticks
 end
@@ -105,7 +112,7 @@ to move ; controls player
           ]
         ]
     set numWater wat
-    set gatherRate gather; get info from temo variables
+    set gatherRate gather; get info from temp variables
     if gatherRate != 0[
       set gatherRate gatherRate - 1 ; decerement time till next gather by 1 every tick
     ]
@@ -122,13 +129,13 @@ to go; calls other procedures to segment code (other wise to go would be huge an
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-205
+323
 10
-696
-502
+857
+545
 -1
 -1
-14.64
+15.94
 1
 10
 1
@@ -183,22 +190,22 @@ NIL
 1
 
 MONITOR
-24
-188
-107
-233
-count turtles
-count turtles
+89
+12
+190
+57
+Available Water
+count waters
 17
 1
 11
 
 MONITOR
-28
-256
-85
-301
-Water
+197
+12
+299
+57
+Water Collected
 playerwater
 17
 1
