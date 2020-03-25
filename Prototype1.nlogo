@@ -1,4 +1,3 @@
-turtles-own[]
 
 globals[
 ]
@@ -69,6 +68,12 @@ to background ; create player and all other initial entities
   ]
 end
 
+to instructions
+  print "Click to move player to gather resources."
+  print "Player:RED|Water:BLUE|Iron:BLACK|Wood:BROWN"
+  print "Gathering: 1 resource per 200 ticks"
+end
+
 to-report PlayerWater ; reports amount of water player has
   let wat 0
   ask players[
@@ -104,6 +109,7 @@ to setup ; sets all starting conditions
   set-default-shape irons "circle"
   ask patches [set pcolor green]
   background
+  instructions
 
   reset-ticks
 end
@@ -301,48 +307,115 @@ NIL
 1
 
 MONITOR
-24
-188
-107
-233
-count turtles
+11
+138
+131
+183
+Available resources
 count turtles
 17
 1
 11
 
 MONITOR
-28
-256
-85
-301
-Water
+12
+191
+114
+236
+Water Collected
 playerwater
 17
 1
 11
 
 MONITOR
-27
-323
-84
-368
-Wood
+12
+239
+112
+284
+Wood Collected
 playerwood
 17
 1
 11
 
 MONITOR
-27
-384
-84
-429
-Iron
+12
+288
+102
+333
+Iron Collected
 playeriron
 17
 1
 11
+
+SWITCH
+8
+340
+159
+373
+AutomatedWater
+AutomatedWater
+1
+1
+-1000
+
+SWITCH
+8
+375
+157
+408
+AutomatedWood
+AutomatedWood
+1
+1
+-1000
+
+SWITCH
+9
+412
+149
+445
+AutomatedIron
+AutomatedIron
+1
+1
+-1000
+
+BUTTON
+7
+450
+181
+483
+Increase Water Collection
+NIL
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+8
+487
+171
+520
+Increase Iron Collection
+NIL
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
