@@ -9,14 +9,30 @@ waters-own[
   parentY ; parent ycor
 ]
 
+woods-own[
+  woodGrowth ; how fast wood spreads
+  parentX ; parent xcor
+  parentY ; parent ycor
+]
+
+irons-own[
+  ironGrowth ; how fast iron spreads
+  parentX ; parent xcor
+  parentY ; parent ycor
+]
+
 players-own[
   destX
   desty
   gatherRate; how fast player can collect resource again
   numWater ; how much water player has
+  numWood ;how much wood player has
+  numIron ; how much iron player has
 ]
 
 breed [waters water]
+breed [woods wood]
+breed [irons iron]
 breed[players player]
 
 
@@ -27,21 +43,30 @@ to background ; create player and all other initial entities
       set color blue ; color of water is blue
     ]
   ]
+
+  ask patch (max-pxcor / 2) (0)[ sprout-woods 1 [  ;make woods cell at given cords
+      set woodGrowth 50
+      set size .5   ; easier to see
+      set color brown ; color of woods is brown
+    ]
+  ]
+
+  ask patch (min-pxcor / 50) (0)[ sprout-irons 1 [  ;make iron cell at given cords
+      set ironGrowth 50
+      set size .5   ; easier to see
+      set color black ; color of iron is black
+    ]
+  ]
+
     ask patch round (min-pxcor / 2) round (min-pycor / 2)[ sprout-players 1 [ ; make player at given cords
       set size .5
       set color red
       set destx round (min-pxcor / 2) ; initial destination is spawn point
       set desty round (min-pycor / 2)
-      set gatherRate 200 ; how many ticks till player can pick up resource
+      set gatherRate 30 ; how many ticks till player can pick up resource
       set numWater 0 ; inital water resource
     ]
   ]
-end
-
-to instructions
-  print "Click to move player to gather resources."
-  print "Player:RED|Water:BLUE"
-  print "Gathering: 1 resource per 200 ticks"
 end
 
 to-report PlayerWater ; reports amount of water player has
@@ -52,14 +77,33 @@ to-report PlayerWater ; reports amount of water player has
   report wat
 end
 
+to-report PlayerWood ; reports amount of wood player has
+  let woo 0
+  ask players[
+    set woo numWood
+  ]
+  report woo
+end
+
+to-report PlayerIron ; reports amount of water player has
+  let iro 0
+  ask players[
+    set iro numIron
+  ]
+  report iro
+end
+
+
+
 
 to setup ; sets all starting conditions
   clear-all
   set-default-shape players "circle"
   set-default-shape waters "circle"
+  set-default-shape woods "circle"
+  set-default-shape irons "circle"
   ask patches [set pcolor green]
   background
-  instructions
 
   reset-ticks
 end
@@ -87,6 +131,49 @@ to resources ; controls resources in general
     ]
  ]
 
+ ask woods [
+    set woodGrowth woodGrowth + 1
+    set parentX xcor
+    set parentY ycor
+    let surrounding count woods in-cone 10 360
+    if woodGrowth = 100 and surrounding < 20[ ; limits growth rate and amount
+      let randomy -1 + random-float 2 ; make random spawn distance y
+      let randomx -1 + random-float 2; make random spawn distance y
+      set woodGrowth 0
+      hatch-woods 1[ ; spawn new water
+        set color brown
+        set size .5
+        setxy(parentX + randomx) (parentY + randomy) ; random spawn point but close to parent
+      ]
+    ]
+    if woodGrowth > 100 [ ; water always takes 100 ticks to respawn even if one was just taken
+      set woodGrowth 0
+    ]
+ ]
+
+  ask irons [
+    set ironGrowth ironGrowth + 1
+    set parentX xcor
+    set parentY ycor
+    let surrounding count irons in-cone 10 360
+    if ironGrowth = 100 and surrounding < 20[ ; limits growth rate and amount
+      let randomy -1 + random-float 2 ; make random spawn distance y
+      let randomx -1 + random-float 2; make random spawn distance y
+      set ironGrowth 0
+      hatch-irons 1[ ; spawn new water
+        set color black
+        set size .5
+        setxy(parentX + randomx) (parentY + randomy) ; random spawn point but close to parent
+      ]
+    ]
+    if ironGrowth > 100 [ ; water always takes 100 ticks to respawn even if one was just taken
+      set ironGrowth 0
+    ]
+ ]
+
+
+
+
 end
 
 to move ; controls player
@@ -103,16 +190,40 @@ to move ; controls player
   ask players[ ; collecting resources
       let gather gatherRate
       let wat numWater ; avoid asking waters for variables it doesnt have (temp vars)
-      let use one-of waters-here
+      let woo numWood  ; (temp var)
+      let iro numIron ; (temp var)
+
+      let useWater one-of waters-here
+      let useWood one-of woods-here
+      let useIron one-of irons-here
       ask waters[
-          if gather = 0 and use != nobody[ ; use only one and only if a number of ticks went by
-             ask use [die]
+          if gather = 0 and useWater != nobody[ ; use only one and only if a number of ticks went by
+             ask useWater [die]
              set gather 150 ; how long until another resource can be used
              set wat wat + 1 ; increment wat
           ]
         ]
+
+      ask woods[
+        if gather = 0 and useWood != nobody[ ; use only one and only if a number of ticks went by
+            ask useWood [die]
+            set gather 150 ; how long until another resource can be used
+            set woo woo + 1; increment woo
+          ]
+        ]
+
+      ask irons[
+        if gather = 0 and useIron != nobody[ ; use only one and only if a number of ticks went by
+            ask useIron [die]
+            set gather 150 ; how long until another resource can be used
+            set iro iro + 1 ; increment iro
+         ]
+       ]
+
     set numWater wat
-    set gatherRate gather; get info from temp variables
+    set numWood woo
+    set numIron iro
+    set gatherRate gather; get info from temo variables
     if gatherRate != 0[
       set gatherRate gatherRate - 1 ; decerement time till next gather by 1 every tick
     ]
@@ -129,13 +240,13 @@ to go; calls other procedures to segment code (other wise to go would be huge an
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-323
+205
 10
-857
-545
+696
+502
 -1
 -1
-15.94
+14.64
 1
 10
 1
@@ -190,23 +301,45 @@ NIL
 1
 
 MONITOR
-89
-12
-190
-57
-Available Water
-count waters
+24
+188
+107
+233
+count turtles
+count turtles
 17
 1
 11
 
 MONITOR
-197
-12
-299
-57
-Water Collected
+28
+256
+85
+301
+Water
 playerwater
+17
+1
+11
+
+MONITOR
+27
+323
+84
+368
+Wood
+playerwood
+17
+1
+11
+
+MONITOR
+27
+384
+84
+429
+Iron
+playeriron
 17
 1
 11
