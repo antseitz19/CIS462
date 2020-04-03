@@ -1,4 +1,3 @@
-
 globals[
 ]
 
@@ -29,10 +28,15 @@ players-own[
   numIron ; how much iron player has
 ]
 
+collectors-own[
+  collectionRate
+]
+
 breed [waters water]
 breed [woods wood]
 breed [irons iron]
 breed[players player]
+breed[collectors collector]
 
 
 to background ; create player and all other initial entities
@@ -64,6 +68,9 @@ to background ; create player and all other initial entities
       set desty round (min-pycor / 2)
       set gatherRate 30 ; how many ticks till player can pick up resource
       set numWater 0 ; inital water resource
+      set numIron 0
+      set numWood 0
+
     ]
   ]
 end
@@ -107,6 +114,8 @@ to setup ; sets all starting conditions
   set-default-shape waters "circle"
   set-default-shape woods "circle"
   set-default-shape irons "circle"
+  set-default-shape collectors "circle"
+
   ask patches [set pcolor green]
   background
   instructions
@@ -177,9 +186,68 @@ to resources ; controls resources in general
     ]
  ]
 
+  ask collectors[
 
 
+    set collectionRate collectionRate - 1
+    if collectionRate <= 0[
 
+      set collectionRate 225
+      let bree "none"
+      (ifelse ; else if that takes the first resource -
+       count irons in-cone 2 360 > 0 [
+         let useiron one-of irons in-cone 2 360
+         ask useiron[die]
+         set bree "iron"
+       ]
+       count waters in-cone 2 360 > 0 [
+         let usewater one-of waters in-cone 2 360
+         ask usewater[die]
+         set bree "water"
+       ]
+       count woods in-cone 2 360 > 0 [
+         let usewood one-of woods in-cone 2 360
+         ask usewood[die]
+         set bree "wood"
+       ]
+      []);elsereporter
+      ask players[
+        if bree = "wood"[
+          set numWood numWood + 1
+        ]
+        if bree = "iron"[
+          set numIron numIron + 1
+        ]
+        if bree = "water"[
+          set numWater numWater + 1
+        ]
+      ]
+    ]
+  ]
+end
+
+to createCollector ; creates a collector at a the player's location
+  let requirements false
+  let locationx 0
+  let locationy 0
+  ask players[
+    if numWater >= 1 and numIron >= 2 and numWood >= 2[ ; requirements to make collector
+      set requirements true
+      set numwater numwater - 1 ; take required resources
+      set numIron numIron - 2
+      set numWood numWood - 2
+      set locationx xcor
+      set locationy ycor
+    ]
+  ]
+  if requirements = true [
+   ask patch round (locationx)(locationy)[ sprout-collectors 1 [
+      set size .5
+      set color yellow
+      set collectionRate 225
+    ]
+   ]
+  ]
 end
 
 to move ; controls player
@@ -193,6 +261,7 @@ to move ; controls player
       facexy (destx)(desty)
     ]
   ]
+
   ask players[ ; collecting resources
       let gather gatherRate
       let wat numWater ; avoid asking waters for variables it doesnt have (temp vars)
@@ -284,7 +353,7 @@ NIL
 T
 OBSERVER
 NIL
-NIL
+S
 NIL
 NIL
 1
@@ -413,6 +482,23 @@ T
 OBSERVER
 NIL
 NIL
+NIL
+NIL
+1
+
+BUTTON
+753
+49
+870
+82
+create collector
+createCollector
+NIL
+1
+T
+OBSERVER
+NIL
+C
 NIL
 NIL
 1
