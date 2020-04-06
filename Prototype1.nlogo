@@ -79,6 +79,7 @@ to instructions
   print "Click to move player to gather resources."
   print "Player:RED|Water:BLUE|Iron:BLACK|Wood:BROWN"
   print "Gathering: 1 resource per 200 ticks"
+  print "The player may spawn an automatic resource collector by spending a total of 1 water, 2 iron, and 2 wood resources"
 end
 
 to-report PlayerWater ; reports amount of water player has
@@ -419,44 +420,11 @@ playeriron
 1
 11
 
-SWITCH
-8
-340
-159
-373
-AutomatedWater
-AutomatedWater
-1
-1
--1000
-
-SWITCH
-8
-375
-157
-408
-AutomatedWood
-AutomatedWood
-1
-1
--1000
-
-SWITCH
-9
-412
-149
-445
-AutomatedIron
-AutomatedIron
-1
-1
--1000
-
 BUTTON
 7
-450
+342
 181
-483
+375
 Increase Water Collection
 NIL
 NIL
@@ -470,10 +438,10 @@ NIL
 1
 
 BUTTON
-8
-487
-171
-520
+7
+379
+170
+412
 Increase Iron Collection
 NIL
 NIL
@@ -487,10 +455,10 @@ NIL
 1
 
 BUTTON
-753
-49
-870
-82
+706
+12
+823
+45
 create collector
 createCollector
 NIL
@@ -499,6 +467,23 @@ T
 OBSERVER
 NIL
 C
+NIL
+NIL
+1
+
+BUTTON
+7
+418
+179
+451
+Increase Wood Collection
+NIL
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
 NIL
 NIL
 1
