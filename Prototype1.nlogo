@@ -5,18 +5,21 @@ waters-own[
   waterGrowth ; how fast water spreads
   parentX ; parent xcor
   parentY ; parent ycor
+  Units
 ]
 
 woods-own[
   woodGrowth ; how fast wood spreads
   parentX ; parent xcor
   parentY ; parent ycor
+  Units
 ]
 
 irons-own[
   ironGrowth ; how fast iron spreads
   parentX ; parent xcor
   parentY ; parent ycor
+  Units
 ]
 
 players-own[
@@ -26,6 +29,9 @@ players-own[
   numWater ; how much water player has
   numWood ;how much wood player has
   numIron ; how much iron player has
+  WaterUnit
+  WoodUnit
+  IronUnit
 ]
 
 collectors-own[
@@ -44,6 +50,7 @@ to background ; create player and all other initial entities
       set waterGrowth 50
       set size .5   ; easier to see
       set color blue ; color of water is blue
+
     ]
   ]
 
@@ -51,6 +58,7 @@ to background ; create player and all other initial entities
       set woodGrowth 50
       set size .5   ; easier to see
       set color brown ; color of woods is brown
+
     ]
   ]
 
@@ -58,6 +66,7 @@ to background ; create player and all other initial entities
       set ironGrowth 50
       set size .5   ; easier to see
       set color black ; color of iron is black
+
     ]
   ]
 
@@ -70,6 +79,9 @@ to background ; create player and all other initial entities
       set numWater 0 ; inital water resource
       set numIron 0
       set numWood 0
+      set WaterUnit 1
+      set WoodUnit 1
+      set IronUnit 1
 
     ]
   ]
@@ -79,7 +91,6 @@ to instructions
   print "Click to move player to gather resources."
   print "Player:RED|Water:BLUE|Iron:BLACK|Wood:BROWN"
   print "Gathering: 1 resource per 200 ticks"
-  print "The player may spawn an automatic resource collector by spending a total of 1 water, 2 iron, and 2 wood resources"
 end
 
 to-report PlayerWater ; reports amount of water player has
@@ -214,13 +225,13 @@ to resources ; controls resources in general
       []);elsereporter
       ask players[
         if bree = "wood"[
-          set numWood numWood + 1
+          set numWood numWood + WaterUnit
         ]
         if bree = "iron"[
-          set numIron numIron + 1
+          set numIron numIron + IronUnit
         ]
         if bree = "water"[
-          set numWater numWater + 1
+          set numWater numWater + WaterUnit
         ]
       ]
     ]
@@ -269,6 +280,10 @@ to move ; controls player
       let woo numWood  ; (temp var)
       let iro numIron ; (temp var)
 
+      let WaU WaterUnit
+      let IU IronUnit
+      let WoU WoodUnit
+
       let useWater one-of waters-here
       let useWood one-of woods-here
       let useIron one-of irons-here
@@ -276,7 +291,7 @@ to move ; controls player
           if gather = 0 and useWater != nobody[ ; use only one and only if a number of ticks went by
              ask useWater [die]
              set gather 150 ; how long until another resource can be used
-             set wat wat + 1 ; increment wat
+             set wat wat + WaU ; increment wat
           ]
         ]
 
@@ -284,7 +299,7 @@ to move ; controls player
         if gather = 0 and useWood != nobody[ ; use only one and only if a number of ticks went by
             ask useWood [die]
             set gather 150 ; how long until another resource can be used
-            set woo woo + 1; increment woo
+            set woo woo + WoU; increment woo
           ]
         ]
 
@@ -292,7 +307,7 @@ to move ; controls player
         if gather = 0 and useIron != nobody[ ; use only one and only if a number of ticks went by
             ask useIron [die]
             set gather 150 ; how long until another resource can be used
-            set iro iro + 1 ; increment iro
+            set iro iro + IU ; increment iro
          ]
        ]
 
@@ -305,6 +320,33 @@ to move ; controls player
     ]
     if destx - xcor > .5 or desty - ycor > .5 or destx - xcor < -.5 or desty - ycor < -.5[ ; player stops within .5 units of click point
       fd .1
+    ]
+  ]
+end
+
+to more-water
+  ask players[
+    if numWater >= 50[
+      set numWater numWater - 50
+      set WaterUnit 10
+    ]
+  ]
+end
+
+to more-wood
+  ask players[
+    if numWood >= 50[
+      set numWood numWood - 50
+      set WoodUnit 10
+    ]
+  ]
+end
+
+to more-iron
+  ask players[
+    if numIron >= 50[
+      set numIron numIron - 50
+      set IronUnit 10
     ]
   ]
 end
@@ -377,10 +419,10 @@ NIL
 1
 
 MONITOR
-11
-138
-131
-183
+726
+142
+846
+187
 Available resources
 count turtles
 17
@@ -388,10 +430,10 @@ count turtles
 11
 
 MONITOR
-12
-191
-114
-236
+727
+195
+829
+240
 Water Collected
 playerwater
 17
@@ -399,10 +441,10 @@ playerwater
 11
 
 MONITOR
-12
-239
-112
-284
+727
+243
+827
+288
 Wood Collected
 playerwood
 17
@@ -410,10 +452,10 @@ playerwood
 11
 
 MONITOR
-12
-288
-102
-333
+727
+292
+817
+337
 Iron Collected
 playeriron
 17
@@ -421,12 +463,12 @@ playeriron
 11
 
 BUTTON
-7
-342
-181
-375
+9
+136
+183
+169
 Increase Water Collection
-NIL
+more-water
 NIL
 1
 T
@@ -438,12 +480,12 @@ NIL
 1
 
 BUTTON
-7
-379
-170
-412
+10
+173
+173
+206
 Increase Iron Collection
-NIL
+more-iron
 NIL
 1
 T
@@ -455,10 +497,10 @@ NIL
 1
 
 BUTTON
-706
-12
-823
-45
+753
+49
+870
+82
 create collector
 createCollector
 NIL
@@ -472,12 +514,12 @@ NIL
 1
 
 BUTTON
-7
-418
-179
-451
+10
+224
+182
+257
 Increase Wood Collection
-NIL
+more-wood
 NIL
 1
 T
